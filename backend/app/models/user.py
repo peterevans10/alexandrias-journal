@@ -14,6 +14,6 @@ class User(Base):
     is_active = Column(Boolean(), default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    questions_asked = relationship("Question", foreign_keys="[Question.user_id]", back_populates="user")
+    questions_asked = relationship("Question", foreign_keys="[Question.author_id]", back_populates="author")
     questions_received = relationship("Question", foreign_keys="[Question.recipient_id]", back_populates="recipient")
     answers = relationship("Answer", back_populates="user")

@@ -20,7 +20,7 @@ def test_create_question(client: TestClient, test_user: dict, test_user2: dict):
         "recipient_id": test_user2["id"]
     }
     response = client.post(
-        "/api/questions/",
+        "/api/questions/user-question",
         headers={"Authorization": f"Bearer {access_token}"},
         json=question_data
     )
@@ -55,7 +55,7 @@ def test_get_user_questions(
 
     # Test getting user's questions
     response = client.get(
-        "/api/questions/me",
+        "/api/questions/received",
         headers={"Authorization": f"Bearer {access_token}"}
     )
     assert response.status_code == 200
@@ -90,7 +90,7 @@ def test_question_pagination(
 
     # Test pagination
     response = client.get(
-        "/api/questions/me?skip=0&limit=10",
+        "/api/questions/received?skip=0&limit=10",
         headers={"Authorization": f"Bearer {access_token}"}
     )
     assert response.status_code == 200
@@ -100,7 +100,7 @@ def test_question_pagination(
 
     # Test next page
     response = client.get(
-        "/api/questions/me?skip=10&limit=10",
+        "/api/questions/received?skip=10&limit=10",
         headers={"Authorization": f"Bearer {access_token}"}
     )
     assert response.status_code == 200

@@ -15,8 +15,8 @@ import axios from 'axios';
 
 interface User {
   id: string;
-  username: string;
   email: string;
+  full_name: string;
 }
 
 const QuestionSubmission: React.FC = () => {
@@ -30,17 +30,22 @@ const QuestionSubmission: React.FC = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/users/', {
+        console.log('Fetching users with token:', token);
+        const response = await axios.get('http://localhost:8000/api/users', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
+        console.log('Users response:', response.data);
         setUsers(response.data);
       } catch (err) {
+        console.error('Error fetching users:', err);
         setError('Failed to load users');
       }
     };
-    fetchUsers();
+    if (token) {
+      fetchUsers();
+    }
   }, [token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,20 +56,42 @@ const QuestionSubmission: React.FC = () => {
     }
 
     try {
-      await axios.post('http://localhost:8000/questions/user-question', {
+      const requestData = {
         text: question,
-        recipient_id: recipient.id,
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      };
+      
+      console.log('Submitting question with data:', requestData);
+      console.log('Recipient ID:', recipient.id);
+      
+      const response = await axios.post(
+        `http://localhost:8000/api/questions/user-question?recipient_id=${recipient.id}`,
+        requestData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      console.log('Question submission successful:', response.data);
       setShowSuccess(true);
       setQuestion('');
       setRecipient(null);
       setError(null);
     } catch (err) {
-      setError('Failed to submit question. Please try again.');
+      console.error('Error submitting question:', err);
+      if (axios.isAxiosError(err)) {
+        const errorMessage = err.response?.data?.detail || err.message;
+        console.error('Error details:', {
+          status: err.response?.status,
+          data: err.response?.data,
+          message: errorMessage
+        });
+        setError(`Failed to submit question: ${errorMessage}`);
+      } else {
+        setError('Failed to submit question. Please try again.');
+      }
     }
   };
 
@@ -91,7 +118,7 @@ const QuestionSubmission: React.FC = () => {
             value={recipient}
             onChange={(_, newValue) => setRecipient(newValue)}
             options={users}
-            getOptionLabel={(option) => `${option.username} (${option.email})`}
+            getOptionLabel={(option) => `${option.full_name} (${option.email})`}
             renderInput={(params) => (
               <TextField
                 {...params}

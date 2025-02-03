@@ -5,8 +5,10 @@ from app import crud
 from app.api.deps import get_current_user
 from app.db.base import get_db
 from app.models.user import User
+from app.models.question import Question as QuestionModel
 from app.schemas.question import Question, QuestionCreate
 from datetime import datetime, timedelta
+import uuid
 
 router = APIRouter()
 
@@ -59,23 +61,39 @@ def create_user_question(
     """
     Create a new question from one user to another.
     """
-    # Verify recipient exists
-    recipient = crud.user.get(db, id=recipient_id)
-    if not recipient:
-        raise HTTPException(
-            status_code=404,
-            detail="Recipient user not found"
+    try:
+        # Create the question directly in the database using the model
+        question_id = str(uuid.uuid4())
+        db_question = QuestionModel(
+            id=question_id,
+            text=question_in.text,
+            author_id=str(current_user.id),
+            recipient_id=str(recipient_id),
+            is_daily_question=False,
+            created_at=datetime.utcnow()
         )
-    
-    # Create the question with author and recipient information
-    question_data = question_in.dict()
-    question_data.update({
-        "author_id": current_user.id,
-        "recipient_id": recipient_id,
-        "created_at": datetime.utcnow()
-    })
-    question = crud.question.create(db, obj_in=QuestionCreate(**question_data))
-    return question
+        
+        db.add(db_question)
+        db.commit()
+        db.refresh(db_question)
+        
+        # Manually create the response schema
+        return Question(
+            id=db_question.id,
+            text=db_question.text,
+            author_id=db_question.author_id,
+            recipient_id=db_question.recipient_id,
+            is_daily_question=db_question.is_daily_question,
+            created_at=db_question.created_at
+        )
+        
+    except Exception as e:
+        print(f"Error creating question: {str(e)}")
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error creating question: {str(e)}"
+        )
 
 @router.get("/received", response_model=List[Question])
 def get_received_questions(

@@ -1,20 +1,22 @@
 from typing import Optional
 from datetime import datetime
-from pydantic import BaseModel, UUID4
+from pydantic import BaseModel
+from uuid import UUID
 
 class QuestionBase(BaseModel):
     text: str
-    recipient_id: str
-    user_id: Optional[str] = None
 
 class QuestionCreate(QuestionBase):
-    user_id: str
+    pass
 
 class QuestionUpdate(QuestionBase):
     pass
 
 class Question(QuestionBase):
-    id: str
+    id: UUID
+    author_id: UUID
+    recipient_id: UUID
+    is_daily_question: bool
     created_at: datetime
 
     class Config:
