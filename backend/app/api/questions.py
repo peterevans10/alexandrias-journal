@@ -51,11 +51,12 @@ def get_questions(
     return questions
 
 @router.post("/user-question", response_model=Question)
+@router.post("/user-question/{recipient_id}", response_model=Question)
 def create_user_question(
+    recipient_id: str,
     *,
     db: Session = Depends(get_db),
     question_in: QuestionCreate,
-    recipient_id: str,
     current_user: User = Depends(get_current_user)
 ) -> Any:
     """

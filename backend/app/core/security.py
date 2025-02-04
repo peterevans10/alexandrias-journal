@@ -17,7 +17,14 @@ def create_access_token(subject: str, expires_delta: Optional[timedelta] = None)
     return encoded_jwt
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    print(f"Verifying password. Hash length: {len(hashed_password)}")
+    try:
+        result = pwd_context.verify(plain_password, hashed_password)
+        print(f"Password verification result: {result}")
+        return result
+    except Exception as e:
+        print(f"Password verification error: {str(e)}")
+        return False
 
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)

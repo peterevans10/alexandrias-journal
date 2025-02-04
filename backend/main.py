@@ -4,21 +4,23 @@ from pydantic import BaseModel
 from datetime import datetime
 import random
 from typing import List, Optional
-from app.api import auth
+from app.api import auth, users, questions
 
 app = FastAPI(title="Alexandria's Journal API")
 
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React app's address
+    allow_origins=["http://localhost:3000", "http://localhost:8001"],  # React app's address
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # Include routers
-app.include_router(auth.router)
+app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+app.include_router(users.router, prefix="/api/users", tags=["users"])
+app.include_router(questions.router, prefix="/api/questions", tags=["questions"])
 
 # Models
 class Question(BaseModel):

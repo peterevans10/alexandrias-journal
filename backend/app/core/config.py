@@ -34,9 +34,10 @@ class Settings(BaseSettings):
         case_sensitive = True
         env_file = ".env"
 
-@lru_cache()
+# @lru_cache()  # Temporarily disabled for debugging
 def get_settings() -> Settings:
     """Get cached settings to avoid reading .env file multiple times."""
     return Settings()
 
 settings = get_settings()
+print(f"Using default secret key: {settings.SECRET_KEY == 'your-secret-key-here'}")

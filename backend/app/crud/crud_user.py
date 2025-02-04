@@ -36,10 +36,14 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
     def authenticate(self, db: Session, *, email: str, password: str) -> Optional[User]:
         user = self.get_by_email(db, email=email)
+        print(f"Login attempt for email: {email}")
+        print(f"User found: {user is not None}")
         if not user:
             return None
         if not verify_password(password, user.hashed_password):
+            print("Password verification failed")
             return None
+        print("Authentication successful")
         return user
 
     def is_active(self, user: User) -> bool:
