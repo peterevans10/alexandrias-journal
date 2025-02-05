@@ -21,21 +21,33 @@ def get_daily_question(
     current_user: User = Depends(get_current_user)
 ) -> Any:
     """
-    Simple test: Just get any question for the current user with detailed logging
+    Get an unanswered question for the current user
     """
     try:
         print("\n=== Daily Question Debug ===")
         print(f"Current User ID: {current_user.id}")
         print(f"Current User Email: {current_user.email}")
 
-        # Get any question for this user
+        # Check if user has already answered a question today
+        today = datetime.utcnow().date()
+        existing_answer = crud.answer.get_by_user_and_date(
+            db, user_id=str(current_user.id), date=today
+        )
+        if existing_answer:
+            print("\nUser has already answered a question today")
+            raise HTTPException(status_code=404, detail="You have already answered today's question")
+
+        # Get any unanswered question for this user
         question = db.query(QuestionModel)\
-            .filter(QuestionModel.recipient_id == str(current_user.id))\
+            .filter(
+                QuestionModel.recipient_id == str(current_user.id),
+                QuestionModel.is_answered == False
+            )\
             .first()
         
         if not question:
-            print("No questions found for user")
-            raise HTTPException(status_code=404, detail="No questions found")
+            print("No unanswered questions found for user")
+            raise HTTPException(status_code=404, detail="No questions available")
             
         print("\nFound Question:")
         print(f"ID: {question.id}")
@@ -43,17 +55,17 @@ def get_daily_question(
         print(f"Author ID: {question.author_id}")
         print(f"Recipient ID: {question.recipient_id}")
         print(f"Is Daily: {question.is_daily_question}")
+        print(f"Is Answered: {question.is_answered}")
         print(f"Created At: {question.created_at}")
 
         print("\nAttempting to convert to schema...")
         schema = Question.from_orm(question)
         print("Successfully converted to schema!")
-        print(f"Schema ID: {schema.id}")
-        print(f"Schema Author ID: {schema.author_id}")
-        print(f"Schema Recipient ID: {schema.recipient_id}")
         
         return schema
-        
+
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"\nError in get_daily_question: {str(e)}")
         print(f"Error type: {type(e)}")
@@ -61,7 +73,7 @@ def get_daily_question(
         print(f"Traceback: {traceback.format_exc()}")
         raise HTTPException(
             status_code=500,
-            detail=f"Error getting daily question: {str(e)}"
+            detail=f"Error retrieving daily question: {str(e)}"
         )
 
 @router.post("/daily/{question_id}/answer", response_model=Answer)
@@ -81,17 +93,31 @@ def answer_daily_question(
 
         # Verify the question exists and is assigned to the current user
         question = crud.question.get(db, id=question_id)
+        print(f"\nQuestion found: {question is not None}")
+        if question:
+            print(f"Question recipient_id: {question.recipient_id}")
+            print(f"Question is_answered: {question.is_answered}")
+        
         if not question:
+            print("\nError: Question not found")
             raise HTTPException(status_code=404, detail="Question not found")
         if str(question.recipient_id) != str(current_user.id):
+            print("\nError: Not authorized")
+            print(f"Question recipient_id: {question.recipient_id}")
+            print(f"Current user id: {current_user.id}")
             raise HTTPException(status_code=403, detail="Not authorized to answer this question")
+        if question.is_answered:
+            print("\nError: Question already answered")
+            raise HTTPException(status_code=400, detail="This question has already been answered")
 
         # Check if user has already answered a question today
         today = datetime.utcnow().date()
         existing_answer = crud.answer.get_by_user_and_date(
             db, user_id=str(current_user.id), date=today
         )
+        print(f"\nExisting answer today: {existing_answer is not None}")
         if existing_answer:
+            print("\nError: Already answered today")
             raise HTTPException(
                 status_code=400,
                 detail="You have already answered a question today"
@@ -111,6 +137,10 @@ def answer_daily_question(
         print(f"Question ID: {db_answer.question_id}")
         print(f"User ID: {db_answer.user_id}")
         
+        # Mark the question as answered
+        print("\nMarking question as answered...")
+        question.is_answered = True
+        
         db.add(db_answer)
         db.commit()
         db.refresh(db_answer)
@@ -118,6 +148,9 @@ def answer_daily_question(
         print("\nAnswer created successfully!")
         return Answer.from_orm(db_answer)
         
+    except HTTPException as e:
+        print(f"\nHTTP Exception: {e.detail}")
+        raise e
     except Exception as e:
         print(f"\nError in answer_daily_question: {str(e)}")
         print(f"Error type: {type(e)}")

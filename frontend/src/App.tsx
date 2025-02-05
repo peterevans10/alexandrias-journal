@@ -78,23 +78,49 @@ function DailyQuestion() {
   const [dailyQuestion, setDailyQuestion] = useState<Question | null>(null);
   const [answer, setAnswer] = useState('');
   const [pastAnswers, setPastAnswers] = useState<Answer[]>([]);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const { token } = useAuth();
 
-  useEffect(() => {
-    const fetchDailyQuestion = async () => {
-      try {
-        const response = await axios.get('http://localhost:8000/api/questions/daily', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setDailyQuestion(response.data);
-      } catch (error) {
+  const fetchDailyQuestion = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/questions/daily', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setDailyQuestion(response.data);
+      setStatusMessage(null);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        setDailyQuestion(null);
+        if (error.response?.data?.detail === "You have already answered today's question") {
+          setStatusMessage("completed");
+        } else {
+          setStatusMessage("no-questions");
+        }
+      } else {
         console.error('Error fetching daily question:', error);
+        setStatusMessage("error");
       }
-    };
+    }
+  };
 
+  const fetchPastAnswers = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/answers/me', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setPastAnswers(response.data);
+    } catch (error) {
+      console.error('Error fetching past answers:', error);
+    }
+  };
+
+  useEffect(() => {
     fetchDailyQuestion();
+    fetchPastAnswers();
   }, [token]);
 
   const handleSubmitAnswer = async () => {
@@ -114,18 +140,50 @@ function DailyQuestion() {
       );
       setPastAnswers([...pastAnswers, response.data]);
       setAnswer('');
+      setDailyQuestion(null);
+      setStatusMessage("completed");
     } catch (error) {
       console.error('Error submitting answer:', error);
     }
   };
 
-  return (
-    <Box sx={{ mt: 4 }}>
-      {dailyQuestion && (
+  const renderContent = () => {
+    if (statusMessage === "completed") {
+      return (
         <Box>
-          <Typography variant="h4" gutterBottom>
-            Daily Question
+          <Typography variant="h6" color="primary" gutterBottom>
+            You've completed today's question! 🎉
           </Typography>
+          <Typography variant="body1">
+            Come back tomorrow for a new question.
+          </Typography>
+        </Box>
+      );
+    }
+
+    if (statusMessage === "no-questions") {
+      return (
+        <Box>
+          <Typography variant="body1">
+            No questions available at the moment. Check back later!
+          </Typography>
+        </Box>
+      );
+    }
+
+    if (statusMessage === "error") {
+      return (
+        <Box>
+          <Typography variant="body1" color="error">
+            There was an error loading your daily question. Please try again later.
+          </Typography>
+        </Box>
+      );
+    }
+
+    if (dailyQuestion) {
+      return (
+        <Box>
           <Typography variant="h5" gutterBottom>
             {dailyQuestion.text}
           </Typography>
@@ -147,21 +205,40 @@ function DailyQuestion() {
             Submit Answer
           </Button>
         </Box>
-      )}
+      );
+    }
+
+    return null;
+  };
+
+  return (
+    <Box sx={{ mt: 4 }}>
+      <Typography variant="h4" gutterBottom>
+        Daily Question
+      </Typography>
+      
+      {renderContent()}
+
       <Box sx={{ mt: 4 }}>
         <Typography variant="h5" gutterBottom>
           Past Answers
         </Typography>
-        {pastAnswers.map((answer: Answer) => (
-          <Card key={answer.id} sx={{ mb: 2 }}>
-            <CardContent>
-              <Typography variant="body1">{answer.text}</Typography>
-              <Typography variant="caption" color="text.secondary">
-                {new Date(answer.created_at).toLocaleDateString()}
-              </Typography>
-            </CardContent>
-          </Card>
-        ))}
+        {pastAnswers.length > 0 ? (
+          pastAnswers.map((answer: Answer) => (
+            <Card key={answer.id} sx={{ mb: 2 }}>
+              <CardContent>
+                <Typography variant="body1">{answer.text}</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {new Date(answer.created_at).toLocaleDateString()}
+                </Typography>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <Typography variant="body1" color="text.secondary">
+            No past answers yet. Start answering daily questions to build your journal!
+          </Typography>
+        )}
       </Box>
     </Box>
   );

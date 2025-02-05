@@ -12,6 +12,7 @@ class Question(Base):
     recipient_id = Column(String(36), ForeignKey("users.id"))
     text = Column(String)
     is_daily_question = Column(Boolean, default=False)
+    is_answered = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     author = relationship("User", foreign_keys=[author_id], back_populates="questions_asked")

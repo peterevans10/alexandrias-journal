@@ -73,3 +73,33 @@ async def create_answer(
             status_code=500,
             detail=f"Error creating answer: {str(e)}"
         )
+
+@router.get("/me", response_model=List[Answer])
+def get_my_answers(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Any:
+    """
+    Get all answers for the current user
+    """
+    try:
+        print("\n=== Get My Answers Debug ===")
+        print(f"Current User ID: {current_user.id}")
+
+        answers = db.query(AnswerModel)\
+            .filter(AnswerModel.user_id == str(current_user.id))\
+            .order_by(AnswerModel.created_at.desc())\
+            .all()
+            
+        print(f"\nFound {len(answers)} answers")
+        return [Answer.from_orm(answer) for answer in answers]
+
+    except Exception as e:
+        print(f"\nError in get_my_answers: {str(e)}")
+        print(f"Error type: {type(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error retrieving answers: {str(e)}"
+        )
