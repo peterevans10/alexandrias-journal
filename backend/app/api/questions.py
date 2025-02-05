@@ -6,6 +6,7 @@ from app.api.deps import get_current_user
 from app.db.base import get_db
 from app.models.user import User
 from app.models.question import Question as QuestionModel
+from app.models.answer import Answer as AnswerModel
 from app.schemas.question import Question, QuestionCreate
 from app.schemas.answer import Answer, AnswerCreate
 from datetime import datetime, timedelta
@@ -72,37 +73,61 @@ def answer_daily_question(
     current_user: User = Depends(get_current_user)
 ) -> Any:
     """Submit an answer to the daily question."""
-    # Verify the question exists and is assigned to the current user
-    question = crud.question.get(db, id=question_id)
-    if not question:
-        raise HTTPException(status_code=404, detail="Question not found")
-    if str(question.recipient_id) != str(current_user.id):
-        raise HTTPException(status_code=403, detail="Not authorized to answer this question")
+    try:
+        print("\n=== Answer Daily Question Debug ===")
+        print(f"Question ID: {question_id}")
+        print(f"Current User ID: {current_user.id}")
+        print(f"Answer Text: {answer_in.text}")
 
-    # Check if user has already answered a question today
-    today = datetime.utcnow().date()
-    existing_answer = crud.answer.get_by_user_and_date(
-        db, user_id=str(current_user.id), date=today
-    )
-    if existing_answer:
-        raise HTTPException(
-            status_code=400,
-            detail="You have already answered a question today"
+        # Verify the question exists and is assigned to the current user
+        question = crud.question.get(db, id=question_id)
+        if not question:
+            raise HTTPException(status_code=404, detail="Question not found")
+        if str(question.recipient_id) != str(current_user.id):
+            raise HTTPException(status_code=403, detail="Not authorized to answer this question")
+
+        # Check if user has already answered a question today
+        today = datetime.utcnow().date()
+        existing_answer = crud.answer.get_by_user_and_date(
+            db, user_id=str(current_user.id), date=today
         )
+        if existing_answer:
+            raise HTTPException(
+                status_code=400,
+                detail="You have already answered a question today"
+            )
 
-    # Create the answer
-    db_answer = Answer(
-        id=str(uuid.uuid4()),
-        question_id=question_id,
-        user_id=str(current_user.id),
-        text=answer_in.text,
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow()
-    )
-    db.add(db_answer)
-    db.commit()
-    db.refresh(db_answer)
-    return db_answer
+        print("\nCreating answer...")
+        # Create the answer
+        db_answer = AnswerModel(
+            id=str(uuid.uuid4()),
+            question_id=question_id,
+            user_id=str(current_user.id),
+            text=answer_in.text,
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow()
+        )
+        print(f"Answer ID: {db_answer.id}")
+        print(f"Question ID: {db_answer.question_id}")
+        print(f"User ID: {db_answer.user_id}")
+        
+        db.add(db_answer)
+        db.commit()
+        db.refresh(db_answer)
+        
+        print("\nAnswer created successfully!")
+        return Answer.from_orm(db_answer)
+        
+    except Exception as e:
+        print(f"\nError in answer_daily_question: {str(e)}")
+        print(f"Error type: {type(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error creating answer: {str(e)}"
+        )
 
 @router.get("/", response_model=List[Question])
 def get_questions(

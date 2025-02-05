@@ -102,9 +102,8 @@ function DailyQuestion() {
 
     try {
       const response = await axios.post(
-        'http://localhost:8000/api/answers/',
+        `http://localhost:8000/api/questions/daily/${dailyQuestion.id}/answer`,
         {
-          question_id: dailyQuestion.id,
           text: answer,
         },
         {

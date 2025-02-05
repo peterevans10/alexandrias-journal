@@ -25,4 +25,5 @@ class Answer(AnswerBase):
     updated_at: datetime
 
     class Config:
-        from_attributes = True
+        orm_mode = True  # Required for Pydantic v1 ORM model conversion
+        from_attributes = True  # This will be ignored in v1 but ready for v2
