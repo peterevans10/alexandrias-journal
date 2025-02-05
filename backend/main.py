@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import auth, users, questions
+from app.api import auth, users, questions, answers
 
 app = FastAPI(title="Alexandria's Journal API")
 
@@ -19,6 +19,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(questions.router, prefix="/api/questions", tags=["questions"])
+app.include_router(answers.router, prefix="/api/answers", tags=["answers"])
 
 if __name__ == "__main__":
     import uvicorn
