@@ -7,8 +7,10 @@ from app.db.base import get_db
 from app.models.user import User
 from app.models.question import Question as QuestionModel
 from app.schemas.question import Question, QuestionCreate
+from app.schemas.answer import Answer, AnswerCreate
 from datetime import datetime, timedelta
 import uuid
+import random
 
 router = APIRouter()
 
@@ -18,24 +20,89 @@ def get_daily_question(
     current_user: User = Depends(get_current_user)
 ) -> Any:
     """
-    Get the daily question. If no question exists for today, create one.
+    Simple test: Just get any question for the current user with detailed logging
     """
-    # Get today's date in UTC
-    today = datetime.utcnow().date()
-    
-    # Try to get today's question
-    question = crud.question.get_daily_question(db, date=today)
-    
-    # If no question exists for today, create one
-    if not question:
-        # For now, create a simple question. In the future, this could be more sophisticated
-        question_in = QuestionCreate(
-            text="What was the most interesting thing that happened to you today?",
-            created_at=datetime.utcnow()
+    try:
+        print("\n=== Daily Question Debug ===")
+        print(f"Current User ID: {current_user.id}")
+        print(f"Current User Email: {current_user.email}")
+
+        # Get any question for this user
+        question = db.query(QuestionModel)\
+            .filter(QuestionModel.recipient_id == str(current_user.id))\
+            .first()
+        
+        if not question:
+            print("No questions found for user")
+            raise HTTPException(status_code=404, detail="No questions found")
+            
+        print("\nFound Question:")
+        print(f"ID: {question.id}")
+        print(f"Text: {question.text}")
+        print(f"Author ID: {question.author_id}")
+        print(f"Recipient ID: {question.recipient_id}")
+        print(f"Is Daily: {question.is_daily_question}")
+        print(f"Created At: {question.created_at}")
+
+        print("\nAttempting to convert to schema...")
+        schema = Question.from_orm(question)
+        print("Successfully converted to schema!")
+        print(f"Schema ID: {schema.id}")
+        print(f"Schema Author ID: {schema.author_id}")
+        print(f"Schema Recipient ID: {schema.recipient_id}")
+        
+        return schema
+        
+    except Exception as e:
+        print(f"\nError in get_daily_question: {str(e)}")
+        print(f"Error type: {type(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error getting daily question: {str(e)}"
         )
-        question = crud.question.create(db, obj_in=question_in)
-    
-    return question
+
+@router.post("/daily/{question_id}/answer", response_model=Answer)
+def answer_daily_question(
+    question_id: str,
+    *,
+    db: Session = Depends(get_db),
+    answer_in: AnswerCreate,
+    current_user: User = Depends(get_current_user)
+) -> Any:
+    """Submit an answer to the daily question."""
+    # Verify the question exists and is assigned to the current user
+    question = crud.question.get(db, id=question_id)
+    if not question:
+        raise HTTPException(status_code=404, detail="Question not found")
+    if str(question.recipient_id) != str(current_user.id):
+        raise HTTPException(status_code=403, detail="Not authorized to answer this question")
+
+    # Check if user has already answered a question today
+    today = datetime.utcnow().date()
+    existing_answer = crud.answer.get_by_user_and_date(
+        db, user_id=str(current_user.id), date=today
+    )
+    if existing_answer:
+        raise HTTPException(
+            status_code=400,
+            detail="You have already answered a question today"
+        )
+
+    # Create the answer
+    db_answer = Answer(
+        id=str(uuid.uuid4()),
+        question_id=question_id,
+        user_id=str(current_user.id),
+        text=answer_in.text,
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow()
+    )
+    db.add(db_answer)
+    db.commit()
+    db.refresh(db_answer)
+    return db_answer
 
 @router.get("/", response_model=List[Question])
 def get_questions(
