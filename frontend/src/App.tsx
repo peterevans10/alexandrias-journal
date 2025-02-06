@@ -79,6 +79,8 @@ function DailyQuestion() {
   const [answer, setAnswer] = useState('');
   const [pastAnswers, setPastAnswers] = useState<Answer[]>([]);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [editingAnswer, setEditingAnswer] = useState<string | null>(null);
+  const [editText, setEditText] = useState('');
   const { token } = useAuth();
 
   const fetchDailyQuestion = async () => {
@@ -144,6 +146,32 @@ function DailyQuestion() {
       setStatusMessage("completed");
     } catch (error) {
       console.error('Error submitting answer:', error);
+    }
+  };
+
+  const handleEditAnswer = async (answerId: string, newText: string) => {
+    try {
+      const response = await axios.put(
+        `http://localhost:8000/api/answers/${answerId}`,
+        {
+          text: newText,
+          question_id: pastAnswers.find(a => a.id === answerId)?.question_id
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      
+      // Update the answers list with the edited answer
+      setPastAnswers(pastAnswers.map(a => 
+        a.id === answerId ? response.data : a
+      ));
+      setEditingAnswer(null);
+      setEditText('');
+    } catch (error) {
+      console.error('Error updating answer:', error);
     }
   };
 
@@ -227,10 +255,55 @@ function DailyQuestion() {
           pastAnswers.map((answer: Answer) => (
             <Card key={answer.id} sx={{ mb: 2 }}>
               <CardContent>
-                <Typography variant="body1">{answer.text}</Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {new Date(answer.created_at).toLocaleDateString()}
-                </Typography>
+                {editingAnswer === answer.id ? (
+                  <>
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={4}
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      sx={{ mb: 2 }}
+                    />
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => handleEditAnswer(answer.id, editText)}
+                        disabled={!editText.trim()}
+                      >
+                        Save
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        onClick={() => {
+                          setEditingAnswer(null);
+                          setEditText('');
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </Box>
+                  </>
+                ) : (
+                  <>
+                    <Typography variant="body1">{answer.text}</Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
+                      <Typography variant="caption" color="text.secondary">
+                        {new Date(answer.created_at).toLocaleDateString()}
+                      </Typography>
+                      <Button
+                        size="small"
+                        onClick={() => {
+                          setEditingAnswer(answer.id);
+                          setEditText(answer.text);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                    </Box>
+                  </>
+                )}
               </CardContent>
             </Card>
           ))

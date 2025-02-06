@@ -103,3 +103,57 @@ def get_my_answers(
             status_code=500,
             detail=f"Error retrieving answers: {str(e)}"
         )
+
+@router.put("/{answer_id}", response_model=Answer)
+async def update_answer(
+    request: Request,
+    answer_id: str,
+    *,
+    db: Session = Depends(get_db),
+    answer_in: AnswerCreate,
+    current_user: User = Depends(get_current_user)
+) -> Any:
+    """
+    Update an existing answer.
+    """
+    try:
+        print("\n=== Update Answer Debug ===")
+        print(f"Answer ID: {answer_id}")
+        print(f"Current User ID: {current_user.id}")
+        print(f"New Answer Text: {answer_in.text}")
+
+        # Get existing answer
+        db_answer = db.query(AnswerModel).filter(AnswerModel.id == answer_id).first()
+        if not db_answer:
+            raise HTTPException(status_code=404, detail="Answer not found")
+            
+        # Verify ownership
+        if str(db_answer.user_id) != str(current_user.id):
+            raise HTTPException(status_code=403, detail="Not authorized to edit this answer")
+
+        # Update answer
+        db_answer.text = answer_in.text
+        db_answer.updated_at = datetime.utcnow()
+        
+        db.commit()
+        db.refresh(db_answer)
+        
+        print("\nUpdated Answer:")
+        print(f"ID: {db_answer.id}")
+        print(f"Text: {db_answer.text}")
+        print(f"Updated At: {db_answer.updated_at}")
+        
+        return db_answer
+        
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"\nError in update_answer: {str(e)}")
+        print(f"Error type: {type(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error updating answer: {str(e)}"
+        )
