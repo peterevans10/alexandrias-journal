@@ -91,6 +91,10 @@ def get_my_answers(
             .order_by(AnswerModel.created_at.desc())\
             .all()
             
+        # Ensure question relationships are loaded
+        for answer in answers:
+            db.refresh(answer)
+            
         print(f"\nFound {len(answers)} answers")
         return [Answer.from_orm(answer) for answer in answers]
 

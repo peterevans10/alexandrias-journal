@@ -36,6 +36,7 @@ interface Answer {
   created_at: string;
   user_id: string;
   question_id: string;
+  question: Question;
 }
 
 const theme = createTheme({
@@ -255,6 +256,9 @@ function DailyQuestion() {
           pastAnswers.map((answer: Answer) => (
             <Card key={answer.id} sx={{ mb: 2 }}>
               <CardContent>
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                  Question: {answer.question.text}
+                </Typography>
                 {editingAnswer === answer.id ? (
                   <>
                     <TextField
@@ -287,7 +291,7 @@ function DailyQuestion() {
                   </>
                 ) : (
                   <>
-                    <Typography variant="body1">{answer.text}</Typography>
+                    <Typography variant="body1" sx={{ mt: 1 }}>{answer.text}</Typography>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
                       <Typography variant="caption" color="text.secondary">
                         {new Date(answer.created_at).toLocaleDateString()}

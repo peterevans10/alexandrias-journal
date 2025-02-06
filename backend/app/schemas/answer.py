@@ -2,6 +2,7 @@ from typing import Optional
 from datetime import datetime
 from pydantic import BaseModel
 from uuid import UUID
+from app.schemas.question import Question
 
 
 class AnswerBase(BaseModel):
@@ -23,6 +24,7 @@ class Answer(AnswerBase):
     user_id: UUID
     created_at: datetime
     updated_at: datetime
+    question: Question
 
     class Config:
         orm_mode = True  # Required for Pydantic v1 ORM model conversion
