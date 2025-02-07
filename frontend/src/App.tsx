@@ -27,10 +27,19 @@ import Register from './components/Register';
 import NavBar from './components/NavBar';
 import EditIcon from '@mui/icons-material/Edit';
 
+interface User {
+  id: string;
+  email: string;
+  full_name?: string;
+}
+
 interface Question {
   id: string;
   text: string;
   created_at: string;
+  author_id: string;
+  recipient_id: string;
+  author?: User;
 }
 
 interface Answer {
@@ -159,7 +168,7 @@ function DailyQuestion() {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [editingAnswer, setEditingAnswer] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
-  const { token } = useAuth();
+  const { user, token } = useAuth();
 
   const fetchDailyQuestion = async () => {
     try {
@@ -290,9 +299,27 @@ function DailyQuestion() {
     if (dailyQuestion) {
       return (
         <Box>
-          <Typography variant="h5" gutterBottom sx={{ fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' } }}>
-            {dailyQuestion.text}
-          </Typography>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h5" gutterBottom sx={{ 
+              fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+              mb: 1,
+            }}>
+              {dailyQuestion.text}
+            </Typography>
+            <Typography 
+              variant="subtitle1" 
+              sx={{ 
+                color: 'primary.main',
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+              }}
+            >
+              Asked by {dailyQuestion.author_id === user?.id ? 'you' : 
+                dailyQuestion.author?.full_name || dailyQuestion.author?.email || 'another user'}
+            </Typography>
+          </Box>
           <TextField
             fullWidth
             multiline
@@ -372,19 +399,33 @@ function DailyQuestion() {
                   p: { xs: 2.5, sm: 3 },
                   '&:last-child': { pb: { xs: 2.5, sm: 3 } },
                 }}>
-                  <Typography 
-                    variant="subtitle2" 
-                    color="primary.main"
-                    gutterBottom
-                    sx={{
-                      fontSize: { xs: '0.875rem', sm: '1rem' },
-                      lineHeight: 1.5,
-                      fontWeight: 500,
-                      letterSpacing: '0.01em',
-                    }}
-                  >
-                    {answer.question.text}
-                  </Typography>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography 
+                      variant="subtitle2" 
+                      color="primary.main"
+                      gutterBottom
+                      sx={{
+                        fontSize: { xs: '0.875rem', sm: '1rem' },
+                        lineHeight: 1.5,
+                        fontWeight: 500,
+                        letterSpacing: '0.01em',
+                      }}
+                    >
+                      {answer.question.text}
+                    </Typography>
+                    <Typography 
+                      variant="caption" 
+                      sx={{ 
+                        color: 'text.secondary',
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        display: 'block',
+                        mt: 0.5,
+                      }}
+                    >
+                      Asked by {answer.question.author_id === user?.id ? 'you' : 
+                        answer.question.author?.full_name || answer.question.author?.email || 'another user'}
+                    </Typography>
+                  </Box>
                   {editingAnswer === answer.id ? (
                     <>
                       <TextField

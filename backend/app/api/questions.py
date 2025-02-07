@@ -37,12 +37,13 @@ def get_daily_question(
             print("\nUser has already answered a question today")
             raise HTTPException(status_code=404, detail="You have already answered today's question")
 
-        # Get any unanswered question for this user
+        # Get any unanswered question for this user with author details
         question = db.query(QuestionModel)\
             .filter(
                 QuestionModel.recipient_id == str(current_user.id),
                 QuestionModel.is_answered == False
             )\
+            .join(User, QuestionModel.author_id == User.id)\
             .first()
         
         if not question:
@@ -53,6 +54,7 @@ def get_daily_question(
         print(f"ID: {question.id}")
         print(f"Text: {question.text}")
         print(f"Author ID: {question.author_id}")
+        print(f"Author Name: {question.author.full_name if question.author else 'Unknown'}")
         print(f"Recipient ID: {question.recipient_id}")
         print(f"Is Daily: {question.is_daily_question}")
         print(f"Is Answered: {question.is_answered}")

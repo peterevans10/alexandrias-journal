@@ -3,6 +3,15 @@ from datetime import datetime
 from pydantic import BaseModel
 from uuid import UUID
 
+class UserBase(BaseModel):
+    id: UUID
+    email: str
+    full_name: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
+
 class QuestionBase(BaseModel):
     text: str
 
@@ -18,6 +27,7 @@ class Question(QuestionBase):
     recipient_id: UUID
     is_daily_question: bool
     created_at: datetime
+    author: Optional[UserBase] = None
 
     class Config:
         orm_mode = True  # Required for Pydantic v1 ORM model conversion
