@@ -75,6 +75,22 @@ async def create_answer(
         )
 
 @router.get("/me", response_model=List[Answer])
+def get_user_answers(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    skip: int = 0,
+    limit: int = 100,
+) -> Any:
+    """Get all answers for the current user"""
+    answers = db.query(AnswerModel)\
+        .filter(AnswerModel.user_id == str(current_user.id))\
+        .order_by(AnswerModel.created_at.desc())\
+        .offset(skip)\
+        .limit(limit)\
+        .all()
+    return answers
+
+@router.get("/me/past", response_model=List[Answer])
 def get_my_answers(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),

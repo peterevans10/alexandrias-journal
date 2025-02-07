@@ -26,6 +26,7 @@ import Login from './components/Login';
 import Register from './components/Register';
 import NavBar from './components/NavBar';
 import EditIcon from '@mui/icons-material/Edit';
+import Profile from './components/Profile';
 
 interface User {
   id: string;
@@ -565,6 +566,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <QuestionSubmission />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
           </ProtectedRoute>
         }
       />
