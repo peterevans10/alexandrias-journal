@@ -52,18 +52,24 @@ const theme = createTheme({
       paper: '#FFFAF0',
     },
   },
-  typography: {
-    fontFamily: '"Crimson Text", "Times New Roman", serif',
-    h1: {
-      fontSize: '2.5rem',
-      fontWeight: 600,
-      color: '#8B4513',
-    },
-  },
   components: {
     MuiLink: {
       defaultProps: {
         underline: 'none',
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none', // More modern looking buttons
+        },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: '12px', // Softer corners for cards
+        },
       },
     },
   },
@@ -213,7 +219,7 @@ function DailyQuestion() {
     if (dailyQuestion) {
       return (
         <Box>
-          <Typography variant="h5" gutterBottom>
+          <Typography variant="h5" gutterBottom sx={{ fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' } }}>
             {dailyQuestion.text}
           </Typography>
           <TextField
@@ -241,22 +247,59 @@ function DailyQuestion() {
   };
 
   return (
-    <Box sx={{ mt: 4 }}>
-      <Typography variant="h4" gutterBottom>
+    <Box sx={{ 
+      mt: { xs: 2, sm: 3, md: 4 },
+      px: { xs: 2, sm: 3, md: 0 } // Add padding on smaller screens
+    }}>
+      <Typography 
+        variant="h4" 
+        gutterBottom
+        sx={{ 
+          fontSize: { 
+            xs: '1.5rem',
+            sm: '2rem',
+            md: '2.125rem'
+          }
+        }}
+      >
         Daily Question
       </Typography>
       
       {renderContent()}
 
-      <Box sx={{ mt: 4 }}>
-        <Typography variant="h5" gutterBottom>
+      <Box sx={{ mt: { xs: 3, sm: 4 } }}>
+        <Typography 
+          variant="h5" 
+          gutterBottom
+          sx={{ 
+            fontSize: { 
+              xs: '1.25rem',
+              sm: '1.5rem',
+              md: '1.5rem'
+            }
+          }}
+        >
           Past Answers
         </Typography>
         {pastAnswers.length > 0 ? (
           pastAnswers.map((answer: Answer) => (
-            <Card key={answer.id} sx={{ mb: 2 }}>
-              <CardContent>
-                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+            <Card key={answer.id} sx={{ 
+              mb: { xs: 2, sm: 2.5 },
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)' // Subtle shadow for better depth
+            }}>
+              <CardContent sx={{ 
+                p: { xs: 2, sm: 3 },
+                '&:last-child': { pb: { xs: 2, sm: 3 } } // Override MUI's default padding
+              }}>
+                <Typography 
+                  variant="subtitle2" 
+                  color="text.secondary" 
+                  gutterBottom
+                  sx={{
+                    fontSize: { xs: '0.875rem', sm: '1rem' },
+                    lineHeight: 1.4
+                  }}
+                >
                   Question: {answer.question.text}
                 </Typography>
                 {editingAnswer === answer.id ? (
@@ -267,9 +310,21 @@ function DailyQuestion() {
                       rows={4}
                       value={editText}
                       onChange={(e) => setEditText(e.target.value)}
-                      sx={{ mb: 2 }}
+                      sx={{ 
+                        mb: 2,
+                        '& .MuiInputBase-root': {
+                          fontSize: { xs: '0.975rem', sm: '1rem' }
+                        }
+                      }}
                     />
-                    <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      gap: 1,
+                      flexDirection: { xs: 'column', sm: 'row' }, // Stack buttons on mobile
+                      '& .MuiButton-root': {
+                        flex: { xs: 1, sm: 'initial' } // Full width buttons on mobile
+                      }
+                    }}>
                       <Button
                         variant="contained"
                         color="primary"
@@ -291,9 +346,30 @@ function DailyQuestion() {
                   </>
                 ) : (
                   <>
-                    <Typography variant="body1" sx={{ mt: 1 }}>{answer.text}</Typography>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
-                      <Typography variant="caption" color="text.secondary">
+                    <Typography 
+                      variant="body1" 
+                      sx={{ 
+                        mt: 1,
+                        fontSize: { xs: '0.975rem', sm: '1rem' },
+                        whiteSpace: 'pre-wrap', // Preserve line breaks
+                        wordBreak: 'break-word' // Prevent text overflow
+                      }}
+                    >
+                      {answer.text}
+                    </Typography>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      mt: 2,
+                      flexDirection: { xs: 'column', sm: 'row' },
+                      gap: { xs: 1, sm: 0 }
+                    }}>
+                      <Typography 
+                        variant="caption" 
+                        color="text.secondary"
+                        sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                      >
                         {new Date(answer.created_at).toLocaleDateString()}
                       </Typography>
                       <Button
@@ -301,6 +377,9 @@ function DailyQuestion() {
                         onClick={() => {
                           setEditingAnswer(answer.id);
                           setEditText(answer.text);
+                        }}
+                        sx={{
+                          minWidth: { xs: '100%', sm: 'auto' } // Full width on mobile
                         }}
                       >
                         Edit
@@ -312,7 +391,11 @@ function DailyQuestion() {
             </Card>
           ))
         ) : (
-          <Typography variant="body1" color="text.secondary">
+          <Typography 
+            variant="body1" 
+            color="text.secondary"
+            sx={{ fontSize: { xs: '0.975rem', sm: '1rem' } }}
+          >
             No past answers yet. Start answering daily questions to build your journal!
           </Typography>
         )}
