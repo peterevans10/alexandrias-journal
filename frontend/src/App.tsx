@@ -14,7 +14,9 @@ import {
   CardContent,
   AppBar,
   Toolbar,
-  Link as MuiLink
+  Link as MuiLink,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import { LibraryBooks, QuestionAnswer, History } from '@mui/icons-material';
 import axios from 'axios';
@@ -23,6 +25,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './components/Login';
 import Register from './components/Register';
 import NavBar from './components/NavBar';
+import EditIcon from '@mui/icons-material/Edit';
 
 interface Question {
   id: string;
@@ -42,33 +45,101 @@ interface Answer {
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#1976d2',
+      main: '#1B3D6D', // Alexandria Blue
+      light: '#2C5C9E',
+      dark: '#132B4D',
     },
     secondary: {
-      main: '#dc004e',
+      main: '#C5A572', // Aged Gold
+      light: '#D4BC94',
+      dark: '#A88B54',
     },
     background: {
-      default: '#FDF5E6',
-      paper: '#FFFAF0',
+      default: '#F5F1E6', // Parchment White
+      paper: '#FFFFFF',
+    },
+    text: {
+      primary: '#2C2C2C', // Ink Black
+      secondary: '#666666',
+    },
+  },
+  typography: {
+    fontFamily: '"Lora", "Times New Roman", serif',
+    h4: {
+      fontFamily: '"Lora", "Times New Roman", serif',
+      fontWeight: 600,
+      letterSpacing: '0.02em',
+    },
+    h5: {
+      fontFamily: '"Lora", "Times New Roman", serif',
+      fontWeight: 500,
+      letterSpacing: '0.01em',
+    },
+    body1: {
+      fontFamily: '"Inter", "Helvetica", sans-serif',
+      lineHeight: 1.7,
+    },
+    body2: {
+      fontFamily: '"Inter", "Helvetica", sans-serif',
+      lineHeight: 1.6,
     },
   },
   components: {
-    MuiLink: {
-      defaultProps: {
-        underline: 'none',
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: '12px',
+          backgroundImage: 'linear-gradient(to bottom right, #FFFFFF, #F8F6F0)',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+          position: 'relative',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            borderRadius: '12px',
+            background: 'rgba(197, 165, 114, 0.03)', // Subtle gold tint
+            pointerEvents: 'none',
+          },
+        },
       },
     },
     MuiButton: {
       styleOverrides: {
         root: {
-          textTransform: 'none', // More modern looking buttons
+          textTransform: 'none',
+          borderRadius: '8px',
+          padding: '8px 24px',
+          transition: 'all 0.3s ease',
+          fontFamily: '"Inter", "Helvetica", sans-serif',
+          fontWeight: 500,
+          '&:hover': {
+            transform: 'translateY(-1px)',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          },
+        },
+        contained: {
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
         },
       },
     },
-    MuiCard: {
+    MuiTextField: {
       styleOverrides: {
         root: {
-          borderRadius: '12px', // Softer corners for cards
+          '& .MuiOutlinedInput-root': {
+            borderRadius: '12px',
+            backgroundColor: '#FFFFFF',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              backgroundColor: '#F8F6F0',
+            },
+            '&.Mui-focused': {
+              backgroundColor: '#FFFFFF',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+            },
+          },
         },
       },
     },
@@ -249,17 +320,18 @@ function DailyQuestion() {
   return (
     <Box sx={{ 
       mt: { xs: 2, sm: 3, md: 4 },
-      px: { xs: 2, sm: 3, md: 0 } // Add padding on smaller screens
+      px: { xs: 2, sm: 3, md: 0 },
+      maxWidth: '800px',
+      mx: 'auto',
     }}>
       <Typography 
         variant="h4" 
         gutterBottom
         sx={{ 
-          fontSize: { 
-            xs: '1.5rem',
-            sm: '2rem',
-            md: '2.125rem'
-          }
+          fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+          color: 'primary.dark',
+          textAlign: 'center',
+          mb: 4,
         }}
       >
         Daily Question
@@ -267,134 +339,164 @@ function DailyQuestion() {
       
       {renderContent()}
 
-      <Box sx={{ mt: { xs: 3, sm: 4 } }}>
+      <Box sx={{ mt: { xs: 4, sm: 5 } }}>
         <Typography 
           variant="h5" 
           gutterBottom
           sx={{ 
-            fontSize: { 
-              xs: '1.25rem',
-              sm: '1.5rem',
-              md: '1.5rem'
-            }
+            fontSize: { xs: '1.25rem', sm: '1.5rem' },
+            color: 'primary.dark',
+            mb: 3,
           }}
         >
           Past Answers
         </Typography>
         {pastAnswers.length > 0 ? (
-          pastAnswers.map((answer: Answer) => (
-            <Card key={answer.id} sx={{ 
-              mb: { xs: 2, sm: 2.5 },
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)' // Subtle shadow for better depth
-            }}>
-              <CardContent sx={{ 
-                p: { xs: 2, sm: 3 },
-                '&:last-child': { pb: { xs: 2, sm: 3 } } // Override MUI's default padding
-              }}>
-                <Typography 
-                  variant="subtitle2" 
-                  color="text.secondary" 
-                  gutterBottom
-                  sx={{
-                    fontSize: { xs: '0.875rem', sm: '1rem' },
-                    lineHeight: 1.4
-                  }}
-                >
-                  Question: {answer.question.text}
-                </Typography>
-                {editingAnswer === answer.id ? (
-                  <>
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={4}
-                      value={editText}
-                      onChange={(e) => setEditText(e.target.value)}
-                      sx={{ 
-                        mb: 2,
-                        '& .MuiInputBase-root': {
-                          fontSize: { xs: '0.975rem', sm: '1rem' }
-                        }
-                      }}
-                    />
-                    <Box sx={{ 
-                      display: 'flex', 
-                      gap: 1,
-                      flexDirection: { xs: 'column', sm: 'row' }, // Stack buttons on mobile
-                      '& .MuiButton-root': {
-                        flex: { xs: 1, sm: 'initial' } // Full width buttons on mobile
-                      }
-                    }}>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => handleEditAnswer(answer.id, editText)}
-                        disabled={!editText.trim()}
-                      >
-                        Save
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        onClick={() => {
-                          setEditingAnswer(null);
-                          setEditText('');
+          <Box sx={{ 
+            display: 'flex',
+            flexDirection: 'column',
+            gap: { xs: 3, sm: 4 },
+          }}>
+            {pastAnswers.map((answer: Answer) => (
+              <Card 
+                key={answer.id} 
+                sx={{ 
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+                  },
+                }}
+              >
+                <CardContent sx={{ 
+                  p: { xs: 2.5, sm: 3 },
+                  '&:last-child': { pb: { xs: 2.5, sm: 3 } },
+                }}>
+                  <Typography 
+                    variant="subtitle2" 
+                    color="primary.main"
+                    gutterBottom
+                    sx={{
+                      fontSize: { xs: '0.875rem', sm: '1rem' },
+                      lineHeight: 1.5,
+                      fontWeight: 500,
+                      letterSpacing: '0.01em',
+                    }}
+                  >
+                    {answer.question.text}
+                  </Typography>
+                  {editingAnswer === answer.id ? (
+                    <>
+                      <TextField
+                        fullWidth
+                        multiline
+                        rows={4}
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value)}
+                        sx={{ 
+                          mt: 2,
+                          mb: 2.5,
+                          '& .MuiInputBase-root': {
+                            fontSize: { xs: '0.975rem', sm: '1rem' },
+                            lineHeight: 1.7,
+                          },
                         }}
-                      >
-                        Cancel
-                      </Button>
-                    </Box>
-                  </>
-                ) : (
-                  <>
-                    <Typography 
-                      variant="body1" 
-                      sx={{ 
-                        mt: 1,
-                        fontSize: { xs: '0.975rem', sm: '1rem' },
-                        whiteSpace: 'pre-wrap', // Preserve line breaks
-                        wordBreak: 'break-word' // Prevent text overflow
-                      }}
-                    >
-                      {answer.text}
-                    </Typography>
-                    <Box sx={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center',
-                      mt: 2,
-                      flexDirection: { xs: 'column', sm: 'row' },
-                      gap: { xs: 1, sm: 0 }
-                    }}>
+                      />
+                      <Box sx={{ 
+                        display: 'flex', 
+                        gap: 2,
+                        flexDirection: { xs: 'column', sm: 'row' },
+                      }}>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={() => handleEditAnswer(answer.id, editText)}
+                          disabled={!editText.trim()}
+                          fullWidth={true}
+                        >
+                          Save Changes
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          onClick={() => {
+                            setEditingAnswer(null);
+                            setEditText('');
+                          }}
+                          fullWidth={true}
+                        >
+                          Cancel
+                        </Button>
+                      </Box>
+                    </>
+                  ) : (
+                    <>
                       <Typography 
-                        variant="caption" 
-                        color="text.secondary"
-                        sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                        variant="body1" 
+                        sx={{ 
+                          mt: 2,
+                          color: 'text.primary',
+                          fontSize: { xs: '0.975rem', sm: '1rem' },
+                          whiteSpace: 'pre-wrap',
+                          wordBreak: 'break-word',
+                          lineHeight: 1.7,
+                        }}
                       >
-                        {new Date(answer.created_at).toLocaleDateString()}
+                        {answer.text}
                       </Typography>
-                      <Button
-                        size="small"
-                        onClick={() => {
-                          setEditingAnswer(answer.id);
-                          setEditText(answer.text);
-                        }}
-                        sx={{
-                          minWidth: { xs: '100%', sm: 'auto' } // Full width on mobile
-                        }}
-                      >
-                        Edit
-                      </Button>
-                    </Box>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          ))
+                      <Box sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center',
+                        mt: 3,
+                        pt: 2,
+                        borderTop: '1px solid',
+                        borderColor: 'rgba(0, 0, 0, 0.08)',
+                        flexDirection: { xs: 'column', sm: 'row' },
+                        gap: { xs: 1.5, sm: 0 },
+                      }}>
+                        <Typography 
+                          variant="caption" 
+                          color="text.secondary"
+                          sx={{ 
+                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                            fontFamily: '"Inter", sans-serif',
+                          }}
+                        >
+                          {new Date(answer.created_at).toLocaleDateString(undefined, {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </Typography>
+                        <Button
+                          size="small"
+                          onClick={() => {
+                            setEditingAnswer(answer.id);
+                            setEditText(answer.text);
+                          }}
+                          sx={{
+                            minWidth: { xs: '100%', sm: 'auto' },
+                          }}
+                          startIcon={<EditIcon sx={{ fontSize: 18 }} />}
+                        >
+                          Edit Answer
+                        </Button>
+                      </Box>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </Box>
         ) : (
           <Typography 
             variant="body1" 
             color="text.secondary"
-            sx={{ fontSize: { xs: '0.975rem', sm: '1rem' } }}
+            sx={{ 
+              fontSize: { xs: '0.975rem', sm: '1rem' },
+              textAlign: 'center',
+              py: 4,
+            }}
           >
             No past answers yet. Start answering daily questions to build your journal!
           </Typography>
@@ -433,16 +535,22 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Router>
-        <AuthProvider>
-          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-            <NavBar />
-            <Container component="main" maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-              <AppRoutes />
-            </Container>
-          </Box>
-        </AuthProvider>
-      </Router>
+      <Box sx={{ 
+        minHeight: '100vh',
+        backgroundColor: 'background.default',
+        backgroundImage: 'linear-gradient(to bottom right, rgba(27, 61, 109, 0.03), rgba(197, 165, 114, 0.05))',
+      }}>
+        <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 3, md: 4 } }}>
+          <Router>
+            <AuthProvider>
+              <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+                <NavBar />
+                <AppRoutes />
+              </Box>
+            </AuthProvider>
+          </Router>
+        </Container>
+      </Box>
     </ThemeProvider>
   );
 }
