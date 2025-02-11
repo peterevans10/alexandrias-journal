@@ -1,6 +1,7 @@
 services:
   # Backend API service
   - type: web
+    plan: free
     name: alexandrias-journal-api
     env: python
     buildCommand: cd backend && pip install -r requirements.txt
@@ -21,7 +22,6 @@ services:
   - type: web
     name: alexandrias-journal
     env: static
-    plan: free
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: ./frontend/build
     envVars:
