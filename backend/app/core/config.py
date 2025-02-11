@@ -1,9 +1,9 @@
 import os
-from typing import Optional
+from typing import Optional, List
 from functools import lru_cache
 
 try:
-    # Try Pydantic v2 import first (for production)
+    # Try Pydantic v2 import
     from pydantic_settings import BaseSettings
     from pydantic import PostgresDsn
 except ImportError:
@@ -24,18 +24,22 @@ class Settings(BaseSettings):
     
     # Security
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-here")
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60 * 24 * 8))  # 8 days
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
     
     # Environment
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     TESTING: bool = False
-
+    
     # CORS
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:3000")
-    CORS_ORIGINS: list = [FRONTEND_URL]
     
-    # API settings
+    # API
     API_V1_STR: str = "/api"
+
+    @property
+    def CORS_ORIGINS(self) -> list:
+        """Get allowed CORS origins for development."""
+        return ["http://localhost:3000"]
     
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
@@ -46,11 +50,16 @@ class Settings(BaseSettings):
 
     class Config:
         case_sensitive = True
-        env_file = ".env"
 
 @lru_cache()
-def get_settings() -> Settings:
-    """Get cached settings to avoid reading .env file multiple times."""
+def get_settings():
+    """Get settings based on environment."""
+    if os.getenv("ENVIRONMENT") == "production":
+        try:
+            from app.core.config_prod import ProductionSettings
+            return ProductionSettings()
+        except ImportError:
+            pass
     return Settings()
 
 settings = get_settings()
