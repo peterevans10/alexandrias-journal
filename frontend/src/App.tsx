@@ -267,22 +267,48 @@ function DailyQuestion() {
     if (statusMessage === "completed") {
       return (
         <Box>
-          <Typography variant="h6" color="primary" gutterBottom>
-            You've completed today's question! 🎉
-          </Typography>
-          <Typography variant="body1">
-            Come back tomorrow for a new question.
-          </Typography>
-        </Box>
-      );
-    }
-
-    if (statusMessage === "no-questions") {
-      return (
-        <Box>
-          <Typography variant="body1">
-            No questions available at the moment. Check back later!
-          </Typography>
+          <Paper 
+            elevation={0}
+            sx={{ 
+              p: { xs: 3, sm: 4 },
+              mb: 4,
+              borderRadius: 2,
+              background: 'linear-gradient(145deg, #1B3D6D08 0%, #1B3D6D15 100%)',
+              border: '1px solid',
+              borderColor: 'primary.main',
+              borderOpacity: 0.1,
+              position: 'relative',
+            }}
+          >
+            <Typography
+              variant="overline"
+              sx={{
+                color: 'primary.main',
+                fontWeight: 600,
+                letterSpacing: '0.1em',
+                mb: 2,
+                display: 'block',
+              }}
+            >
+              Daily Question
+            </Typography>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                color: 'success.main',
+                mb: 2,
+                fontWeight: 500,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
+              You've completed today's question! 🎉
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Come back tomorrow for a new question to reflect on.
+            </Typography>
+          </Paper>
         </Box>
       );
     }
@@ -290,9 +316,77 @@ function DailyQuestion() {
     if (statusMessage === "error") {
       return (
         <Box>
-          <Typography variant="body1" color="error">
-            There was an error loading your daily question. Please try again later.
-          </Typography>
+          <Paper 
+            elevation={0}
+            sx={{ 
+              p: { xs: 3, sm: 4 },
+              mb: 4,
+              borderRadius: 2,
+              background: 'linear-gradient(145deg, #1B3D6D08 0%, #1B3D6D15 100%)',
+              border: '1px solid',
+              borderColor: 'primary.main',
+              borderOpacity: 0.1,
+              position: 'relative',
+            }}
+          >
+            <Typography
+              variant="overline"
+              sx={{
+                color: 'primary.main',
+                fontWeight: 600,
+                letterSpacing: '0.1em',
+                mb: 2,
+                display: 'block',
+              }}
+            >
+              Daily Question
+            </Typography>
+            <Typography variant="h6" color="error" sx={{ mb: 2 }}>
+              There was an error loading your daily question.
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Please try again later.
+            </Typography>
+          </Paper>
+        </Box>
+      );
+    }
+
+    if (!dailyQuestion) {
+      return (
+        <Box>
+          <Paper 
+            elevation={0}
+            sx={{ 
+              p: { xs: 3, sm: 4 },
+              mb: 4,
+              borderRadius: 2,
+              background: 'linear-gradient(145deg, #1B3D6D08 0%, #1B3D6D15 100%)',
+              border: '1px solid',
+              borderColor: 'primary.main',
+              borderOpacity: 0.1,
+              position: 'relative',
+            }}
+          >
+            <Typography
+              variant="overline"
+              sx={{
+                color: 'primary.main',
+                fontWeight: 600,
+                letterSpacing: '0.1em',
+                mb: 2,
+                display: 'block',
+              }}
+            >
+              Daily Question
+            </Typography>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              No questions available at the moment.
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Check back later for your next question!
+            </Typography>
+          </Paper>
         </Box>
       );
     }
@@ -300,44 +394,105 @@ function DailyQuestion() {
     if (dailyQuestion) {
       return (
         <Box>
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="h5" gutterBottom sx={{ 
-              fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
-              mb: 1,
-            }}>
+          <Paper 
+            elevation={0}
+            sx={{ 
+              p: { xs: 3, sm: 4 },
+              mb: 4,
+              borderRadius: 2,
+              background: 'linear-gradient(145deg, #1B3D6D08 0%, #1B3D6D15 100%)',
+              border: '1px solid',
+              borderColor: 'primary.main',
+              borderOpacity: 0.1,
+              position: 'relative',
+            }}
+          >
+            {/* Daily Question Label */}
+            <Typography
+              variant="overline"
+              sx={{
+                color: 'primary.main',
+                fontWeight: 600,
+                letterSpacing: '0.1em',
+                mb: 2,
+                display: 'block',
+              }}
+            >
+              Daily Question
+            </Typography>
+
+            {/* Question Text */}
+            <Typography 
+              variant="h5" 
+              gutterBottom 
+              sx={{ 
+                fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+                mb: 2,
+                fontWeight: 500,
+                lineHeight: 1.3,
+                color: 'text.primary',
+              }}
+            >
               {dailyQuestion.text}
             </Typography>
+
+            {/* Author Info */}
             <Typography 
               variant="subtitle1" 
               sx={{ 
-                color: 'primary.main',
+                color: 'text.secondary',
                 fontSize: { xs: '0.875rem', sm: '1rem' },
                 display: 'flex',
                 alignItems: 'center',
                 gap: 0.5,
+                mb: 3,
               }}
             >
               Asked by {dailyQuestion.author_id === user?.id ? 'you' : 
                 dailyQuestion.author?.full_name || dailyQuestion.author?.email || 'another user'}
             </Typography>
-          </Box>
-          <TextField
-            fullWidth
-            multiline
-            rows={4}
-            value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
-            placeholder="Your answer..."
-            sx={{ mt: 2, mb: 2 }}
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSubmitAnswer}
-            disabled={!answer.trim()}
-          >
-            Submit Answer
-          </Button>
+
+            {/* Answer Section */}
+            <Box sx={{ mt: 3 }}>
+              <Typography 
+                variant="subtitle1" 
+                sx={{ 
+                  mb: 2,
+                  fontWeight: 500,
+                  color: 'text.primary',
+                }}
+              >
+                Your Answer
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                value={answer}
+                onChange={(e) => setAnswer(e.target.value)}
+                placeholder="Type your answer here..."
+                sx={{ 
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: 'background.paper',
+                  }
+                }}
+              />
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSubmitAnswer}
+                disabled={!answer.trim()}
+                sx={{ 
+                  mt: 2,
+                  px: 4,
+                  py: 1,
+                  borderRadius: 2,
+                }}
+              >
+                Submit Answer
+              </Button>
+            </Box>
+          </Paper>
         </Box>
       );
     }
