@@ -1,7 +1,14 @@
-from pydantic import BaseSettings, PostgresDsn
 import os
 from typing import Optional
 from functools import lru_cache
+
+try:
+    # Try Pydantic v2 import first (for production)
+    from pydantic_settings import BaseSettings
+    from pydantic import PostgresDsn
+except ImportError:
+    # Fall back to Pydantic v1 import (for local development)
+    from pydantic import BaseSettings, PostgresDsn
 
 class Settings(BaseSettings):
     # Application settings
