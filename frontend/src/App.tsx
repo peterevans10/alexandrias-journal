@@ -17,6 +17,7 @@ import {
   Link as MuiLink,
   useTheme,
   useMediaQuery,
+  CircularProgress,
 } from '@mui/material';
 import { LibraryBooks, QuestionAnswer, History } from '@mui/icons-material';
 import axios from 'axios';
@@ -308,6 +309,45 @@ function DailyQuestion() {
             <Typography variant="body1" color="text.secondary">
               Come back tomorrow for a new question to reflect on.
             </Typography>
+          </Paper>
+        </Box>
+      );
+    }
+
+    if (statusMessage === "loading") {
+      return (
+        <Box>
+          <Paper 
+            elevation={0}
+            sx={{ 
+              p: { xs: 3, sm: 4 },
+              mb: 4,
+              borderRadius: 2,
+              background: 'linear-gradient(145deg, #1B3D6D08 0%, #1B3D6D15 100%)',
+              border: '1px solid',
+              borderColor: 'primary.main',
+              borderOpacity: 0.1,
+              position: 'relative',
+            }}
+          >
+            <Typography
+              variant="overline"
+              sx={{
+                color: 'primary.main',
+                fontWeight: 600,
+                letterSpacing: '0.1em',
+                mb: 2,
+                display: 'block',
+              }}
+            >
+              Daily Question
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+              <CircularProgress size={20} />
+              <Typography variant="body1" color="text.secondary">
+                Loading your daily question... This might take a moment if the service is waking up.
+              </Typography>
+            </Box>
           </Paper>
         </Box>
       );

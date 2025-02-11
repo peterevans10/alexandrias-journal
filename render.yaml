@@ -3,6 +3,7 @@ services:
   - type: web
     name: alexandrias-journal-api
     env: python
+    plan: free
     buildCommand: cd backend && pip install -r requirements.txt
     startCommand: cd backend && gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app
     envVars:
@@ -18,9 +19,10 @@ services:
         value: https://alexandrias-journal.onrender.com
 
   # Frontend static site
-  - type: web
+  - type: static
     name: alexandrias-journal
     env: static
+    plan: free
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: ./frontend/build
     envVars:
@@ -29,5 +31,6 @@ services:
 
 databases:
   - name: alexandrias-journal-db
+    plan: free
     databaseName: alexandrias_journal
     user: alexandrias_journal
