@@ -19,7 +19,7 @@ services:
         value: https://alexandrias-journal.onrender.com
 
   # Frontend static site
-  - type: static
+  - type: web
     name: alexandrias-journal
     env: static
     plan: free
