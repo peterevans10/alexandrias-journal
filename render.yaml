@@ -21,7 +21,7 @@ services:
   - type: web
     name: alexandrias-journal
     env: static
-    plan: free
+    instance_type: free
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: ./frontend/build
     envVars:
