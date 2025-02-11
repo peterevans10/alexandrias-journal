@@ -23,6 +23,13 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     TESTING: bool = False
 
+    # CORS
+    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:3000")
+    CORS_ORIGINS: list = [FRONTEND_URL]
+    
+    # API settings
+    API_V1_STR: str = "/api"
+    
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> PostgresDsn:
         """Get the database URI based on the environment."""
@@ -34,10 +41,9 @@ class Settings(BaseSettings):
         case_sensitive = True
         env_file = ".env"
 
-# @lru_cache()  # Temporarily disabled for debugging
+@lru_cache()
 def get_settings() -> Settings:
     """Get cached settings to avoid reading .env file multiple times."""
     return Settings()
 
 settings = get_settings()
-print(f"Using default secret key: {settings.SECRET_KEY == 'your-secret-key-here'}")
