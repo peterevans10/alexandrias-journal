@@ -15,10 +15,10 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Alexandria's Journal"
     
     # Database
-    DATABASE_URL: PostgresDsn = os.getenv(
+    DATABASE_URL: str = os.getenv(
         "DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/alexandrias_journal"
     )
-    DATABASE_TEST_URL: Optional[PostgresDsn] = os.getenv(
+    DATABASE_TEST_URL: Optional[str] = os.getenv(
         "DATABASE_TEST_URL", "postgresql://postgres:postgres@localhost:5432/alexandrias_journal_test"
     )
     
@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api"
     
     @property
-    def SQLALCHEMY_DATABASE_URI(self) -> PostgresDsn:
+    def SQLALCHEMY_DATABASE_URI(self) -> str:
         """Get the database URI based on the environment."""
         if self.TESTING:
             return self.DATABASE_TEST_URL or self.DATABASE_URL
