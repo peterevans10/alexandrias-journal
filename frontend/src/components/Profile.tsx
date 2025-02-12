@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 
 interface UserInteractionStats {
   user_id: string;
@@ -50,13 +51,13 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchUserData = async () => {
       try {
         const [statsResponse, answersResponse] = await Promise.all([
-          axios.get<UserStats>('http://localhost:8000/api/users/me/stats', {
+          axios.get<UserStats>(`${API_BASE_URL}/users/me/stats`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get<Answer[]>('http://localhost:8000/api/answers/me', {
+          axios.get<Answer[]>(`${API_BASE_URL}/answers/me`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -70,7 +71,7 @@ export default function Profile() {
       }
     };
 
-    fetchData();
+    fetchUserData();
   }, [token]);
 
   if (loading) {

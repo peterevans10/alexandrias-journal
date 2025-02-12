@@ -21,6 +21,7 @@ import {
 } from '@mui/material';
 import { LibraryBooks, QuestionAnswer, History } from '@mui/icons-material';
 import axios from 'axios';
+import { API_BASE_URL } from './config/api';
 import QuestionSubmission from './components/QuestionSubmission';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './components/Login';
@@ -174,7 +175,7 @@ function DailyQuestion() {
 
   const fetchDailyQuestion = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/questions/daily', {
+      const response = await axios.get(`${API_BASE_URL}/questions/daily`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -198,7 +199,7 @@ function DailyQuestion() {
 
   const fetchPastAnswers = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/answers/me', {
+      const response = await axios.get(`${API_BASE_URL}/answers/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -219,7 +220,7 @@ function DailyQuestion() {
 
     try {
       const response = await axios.post(
-        `http://localhost:8000/api/questions/daily/${dailyQuestion.id}/answer`,
+        `${API_BASE_URL}/questions/daily/${dailyQuestion.id}/answer`,
         {
           text: answer,
         },
@@ -241,7 +242,7 @@ function DailyQuestion() {
   const handleEditAnswer = async (answerId: string, newText: string) => {
     try {
       const response = await axios.put(
-        `http://localhost:8000/api/answers/${answerId}`,
+        `${API_BASE_URL}/answers/${answerId}`,
         {
           text: newText,
           question_id: pastAnswers.find(a => a.id === answerId)?.question_id

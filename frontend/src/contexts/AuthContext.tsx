@@ -1,9 +1,10 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { API_URL } from '../config/api';
 
 // Create an axios instance with default config
 const api = axios.create({
-  baseURL: 'http://localhost:8000',
+  baseURL: API_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

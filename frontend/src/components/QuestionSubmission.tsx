@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import { QuestionAnswer } from '@mui/icons-material';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 
 interface User {
   id: string;
@@ -31,7 +32,7 @@ const QuestionSubmission: React.FC = () => {
     const fetchUsers = async () => {
       try {
         console.log('Fetching users with token:', token);
-        const response = await axios.get('http://localhost:8000/api/users', {
+        const response = await axios.get(`${API_BASE_URL}/users`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -57,14 +58,14 @@ const QuestionSubmission: React.FC = () => {
 
     try {
       const requestData = {
-        text: question,
+        question_text: question,
       };
       
       console.log('Submitting question with data:', requestData);
       console.log('Recipient ID:', recipient.id);
       
       const response = await axios.post(
-        `http://localhost:8000/api/questions/user-question?recipient_id=${recipient.id}`,
+        `${API_BASE_URL}/questions/user-question?recipient_id=${recipient.id}`,
         requestData,
         {
           headers: {
