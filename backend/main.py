@@ -2,19 +2,32 @@ from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from app.api import auth, users, questions, answers
 from app.core.config import get_settings
+import os
 
 settings = get_settings()
 app = FastAPI(title="Alexandria's Journal API")
 
+# Configure CORS based on environment
+origins = [
+    "http://localhost:3000",  # Local development frontend
+    "https://alexandrias-journal.onrender.com",  # Production frontend
+]
+
+if os.getenv("ENVIRONMENT") == "development":
+    # Add development-specific origins
+    origins.append("http://localhost:3000")
+elif os.getenv("ENVIRONMENT") == "production":
+    # Add production-specific origins
+    origins.append("https://alexandrias-journal.onrender.com")
+    origins.append("https://alexandrias-journal-api.onrender.com")
+
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"],
-    max_age=3600,
 )
 
 # Include routers
