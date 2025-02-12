@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Production API</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h2>Test Production API Registration</h2>
+    <button onclick="testRegister()">Test Register</button>
+    <pre id="result"></pre>
+
+    <script>
+        async function testRegister() {
+            const result = document.getElementById('result');
+            try {
+                const response = await axios.post(
+                    'https://alexandrias-journal-api.onrender.com/api/auth/register',
+                    {
+                        email: 'test@example.com',
+                        password: 'testpassword',
+                        full_name: 'Test User'
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Origin': 'https://alexandrias-journal.onrender.com'
+                        }
+                    }
+                );
+                result.textContent = JSON.stringify(response.data, null, 2);
+            } catch (error) {
+                result.textContent = JSON.stringify({
+                    error: error.message,
+                    response: error.response?.data,
+                    status: error.response?.status,
+                    headers: error.response?.headers
+                }, null, 2);
+            }
+        }
+    </script>
+</body>
+</html>
