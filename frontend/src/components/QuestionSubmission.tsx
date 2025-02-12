@@ -49,16 +49,17 @@ const QuestionSubmission: React.FC = () => {
     }
   }, [token]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!recipient || !question.trim()) {
-      setError('Please select a recipient and enter your question');
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    
+    if (!recipient) {
+      console.error('No recipient selected');
       return;
     }
 
     try {
       const requestData = {
-        question_text: question,
+        text: question,
       };
       
       console.log('Submitting question with data:', requestData);
@@ -70,26 +71,23 @@ const QuestionSubmission: React.FC = () => {
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
           },
         }
       );
-      
-      console.log('Question submission successful:', response.data);
-      setShowSuccess(true);
+
+      console.log('Question submitted successfully:', response.data);
       setQuestion('');
       setRecipient(null);
-      setError(null);
-    } catch (err) {
-      console.error('Error submitting question:', err);
-      if (axios.isAxiosError(err)) {
-        const errorMessage = err.response?.data?.detail || err.message;
+      setShowSuccess(true);
+    } catch (error) {
+      console.error('Error submitting question:', error);
+      if (axios.isAxiosError(error)) {
         console.error('Error details:', {
-          status: err.response?.status,
-          data: err.response?.data,
-          message: errorMessage
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.response?.data?.detail
         });
-        setError(`Failed to submit question: ${errorMessage}`);
+        setError(`Failed to submit question: ${error.response?.data?.detail}`);
       } else {
         setError('Failed to submit question. Please try again.');
       }

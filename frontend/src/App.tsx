@@ -215,8 +215,11 @@ function DailyQuestion() {
     fetchPastAnswers();
   }, [token]);
 
-  const handleSubmitAnswer = async () => {
-    if (!dailyQuestion) return;
+  const submitAnswer = async (answer: string) => {
+    if (!dailyQuestion) {
+      console.error('No daily question available');
+      return;
+    }
 
     try {
       const response = await axios.post(
@@ -230,12 +233,25 @@ function DailyQuestion() {
           },
         }
       );
-      setPastAnswers([...pastAnswers, response.data]);
+      console.log('Answer submitted successfully:', response.data);
+      
+      // Update UI immediately
       setAnswer('');
       setDailyQuestion(null);
       setStatusMessage("completed");
+      setPastAnswers(prev => [...prev, response.data]);
+      
+      // Fetch latest answers in background
+      fetchPastAnswers();
     } catch (error) {
       console.error('Error submitting answer:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('Error details:', {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.response?.data?.detail
+        });
+      }
     }
   };
 
@@ -521,7 +537,7 @@ function DailyQuestion() {
               <Button
                 variant="contained"
                 color="primary"
-                onClick={handleSubmitAnswer}
+                onClick={() => submitAnswer(answer)}
                 disabled={!answer.trim()}
                 sx={{ 
                   mt: 2,
