@@ -7,24 +7,13 @@ import os
 settings = get_settings()
 app = FastAPI(title="Alexandria's Journal API")
 
-# Configure CORS based on environment
-origins = [
-    "http://localhost:3000",  # Local development frontend
-    "https://alexandrias-journal.onrender.com",  # Production frontend
-]
-
-if os.getenv("ENVIRONMENT") == "development":
-    # Add development-specific origins
-    origins.append("http://localhost:3000")
-elif os.getenv("ENVIRONMENT") == "production":
-    # Add production-specific origins
-    origins.append("https://alexandrias-journal.onrender.com")
-    origins.append("https://alexandrias-journal-api.onrender.com")
-
-# Enable CORS
+# Simple CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=[
+        "http://localhost:3000",
+        "https://alexandrias-journal.onrender.com"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -42,21 +42,33 @@ def login_access_token(
     }
 
 @router.post("/register", response_model=UserSchema)
-def register_user(
-    *,
-    db: Session = Depends(get_db),
+async def register_user(
     user_in: UserCreate,
+    db: Session = Depends(get_db),
 ) -> Any:
     """Register a new user."""
+    print(f"Registering user with email: {user_in.email}")  # Debug log
+    
+    # Check if user already exists
     user = crud.user.get_by_email(db, email=user_in.email)
     if user:
+        print(f"User already exists: {user_in.email}")  # Debug log
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="A user with this email already exists.",
+            status_code=400,
+            detail="The user with this email already exists in the system.",
         )
     
-    user = crud.user.create(db, obj_in=user_in)
-    return user
+    try:
+        # Create new user
+        user = crud.user.create(db, obj_in=user_in)
+        print(f"Successfully created user: {user.email}")  # Debug log
+        return user
+    except Exception as e:
+        print(f"Error creating user: {str(e)}")  # Debug log
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error creating user: {str(e)}",
+        )
 
 @router.get("/me", response_model=UserSchema)
 def read_current_user(
